@@ -4,7 +4,8 @@ class UsersController < ApplicationController
   # GET /users
   # GET /users.json
   def index
-    @users = User.all
+   # @users = User.all
+    @users = sort_column
   end
 
   # GET /users/1
@@ -71,4 +72,20 @@ class UsersController < ApplicationController
     def user_params
       params.require(:user).permit(:firstname, :lastname)
     end
+    
+    def sort_column
+    @sort_field = ''
+    if params[:sort].to_s == 'Firstname'
+      @sort_field = 'users.firstname '
+    elsif params[:sort].to_s == 'Lastname'
+      @sort_field = 'roles.lastname '
+    else
+      @sort_field = 'users.firstname'
+    end
+    User.select("DISTINCT users.*").search(params[:search]).order(@sort_field + ' ' + sort_direction).paginate(:per_page => 1, :page => params[:page])
+  end
+
+  def sort_direction
+    %w[asc desc].include?(params[:direction]) ? params[:direction] : "asc"
+  end
 end
